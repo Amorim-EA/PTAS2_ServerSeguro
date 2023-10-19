@@ -97,11 +97,10 @@ const updateUser = async (req, res) => {
 
 const authenticatedUser = async (req, res) => {
     try{
-        const { email, password } = req.body;
+        const { email } = req.body;
         const isAuthenticated =  await User.findOne({
             where: {
-                email: email,
-                password: password
+                email: email
             }
         });
 
