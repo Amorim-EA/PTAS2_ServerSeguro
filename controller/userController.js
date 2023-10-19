@@ -1,14 +1,15 @@
 const User = require('../models/user');
 const secret = require('../config/auth.json');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const createUser = async (req, res) => {
-    const { name, password, email } = req.body;
-
     try {
+        const { name, password, email } = req.body;
+        const passwdCrypt = await bcrypt.hash(password, 15);
         await User.create({
             name: name,
-            password: password,
+            password: passwdCrypt,
             email: email
         });
 
@@ -33,9 +34,8 @@ const findAllUser = async (req, res) => {
 }
 
 const findOneUser = async (req, res) => {
-    const id = req.body.id;
-
     try {
+        const id = req.body.id;
         const user = await User.findOne({
             where: {
                 id: id
@@ -52,9 +52,8 @@ const findOneUser = async (req, res) => {
 }
 
 const deleteUser = async (req, res) => {
-    const id = parseInt(req.params.id);
-
     try {
+        const id = parseInt(req.params.id);
         await User.destroy({
             where: {
                 id: id
@@ -71,13 +70,13 @@ const deleteUser = async (req, res) => {
 }
 
 const updateUser = async (req, res) => {
-    const id = parseInt(req.params.id);
-    const { name, password, email } = req.body;
-
     try {
+        const id = parseInt(req.params.id);
+        const { name, password, email } = req.body;
+        const passwdCrypt = await bcrypt.hash(password, 15);
         await User.update({
             name: name,
-            password: password,
+            password: passwdCrypt,
             email: email
         },{
             where: {
@@ -97,9 +96,8 @@ const updateUser = async (req, res) => {
 
 
 const authenticatedUser = async (req, res) => {
-    const { email, password } = req.body;
-
     try{
+        const { email, password } = req.body;
         const isAuthenticated =  await User.findOne({
             where: {
                 email: email,
@@ -107,21 +105,23 @@ const authenticatedUser = async (req, res) => {
             }
         });
 
-        const token = jwt.sign({
-            id: email
+        const response = await bcrypt.compare(password, isAuthenticated.password);
 
-        }, secret.secret, {
-            expiresIn: 86400,
-
-        });
-
-        return res.json({
-            name: isAuthenticated.name,
-            email: isAuthenticated.email,
-            token: token
-        
-        });
-
+        if(response){
+            const token = jwt.sign({
+                id: email
+    
+            }, secret.secret, {
+                expiresIn: 86400,
+    
+            });
+            
+            return res.json({
+                name: isAuthenticated.name,
+                email: isAuthenticated.email,
+                token: token
+            });
+        }
     } catch (error) {
         console.log(`Erro ao autenticar: ${error}`);
         return res.status(404).json("Ocorreu um erro autenticar usuário!");
