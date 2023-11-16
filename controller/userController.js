@@ -1,5 +1,5 @@
 const User = require('../models/user');
-const secret = require('../config/auth.json');
+const secret = process.env.SECRET;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
@@ -108,7 +108,7 @@ const authenticatedUser = async (req, res) => {
 
         if(response){
             const token = jwt.sign({ id: email }, secret.secret, { expiresIn: 86400 });
-            return res.json({
+            res.cookie('token', token, { httpOnly: true }).json({
                 name: isAuthenticated.name,
                 email: isAuthenticated.email,
                 token: token

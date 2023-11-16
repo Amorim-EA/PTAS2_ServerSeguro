@@ -15,4 +15,4 @@ define:{
     console.error('Atenção, a conexão falhou!:', error);
   }
 
-  module.exports={Sequelize,sequelize};
+module.exports={Sequelize,sequelize};
