@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 const createUser = async (req, res) => {
     try {
         const { name, password, email } = req.body;
-        const passwdCrypt = await bcrypt.hash(password, 16);
+        const passwdCrypt = await bcrypt.hash(password, 10);
         await User.create({
             name: name,
             password: passwdCrypt,
@@ -42,7 +42,7 @@ const findOneUser = async (req, res) => {
             }
         });
 
-        return res.json(user); 
+        return res.json(user);
 
     } catch (error) {
         console.log({ message: `Erro ao buscar um: ${error}` });
@@ -73,7 +73,7 @@ const updateUser = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const { name, password, email } = req.body;
-        const passwdCrypt = await bcrypt.hash(password, 16);
+        const passwdCrypt = await bcrypt.hash(password, 10);
         await User.update({
             name: name,
             password: passwdCrypt,
@@ -81,7 +81,7 @@ const updateUser = async (req, res) => {
         },{
             where: {
                 id: id
-            } 
+            }
         });
 
         res.json({ message: 'Usuário atualizado com sucesso!' });
@@ -103,21 +103,21 @@ const authenticatedUser = async (req, res) => {
                 email: email
             }
         });
-
-        const response = await bcrypt.compare(password, isAuthenticated.password);
-
-        if(response){
-            const token = jwt.sign({ id: email }, secret.secret, { expiresIn: 86400 });
+        
+        const isPwdValid = await bcrypt.compare(password, isAuthenticated.password);
+        
+        if(isPwdValid){
+            const token = jwt.sign({ id: email }, secret, { expiresIn: 86400 });
             res.cookie('token', token, { httpOnly: true }).json({
                 name: isAuthenticated.name,
                 email: isAuthenticated.email,
                 token: token
             });
             console.log({ message: 'Usuario autenticado com sucesso' });
-        }   
+        }
     } catch (error) {
         console.log({ message: 'Usuario nao encontrado ou senha incorreta!' });
-        res.status(401).json({ message: 'Usuario nao encontrado ou senha incorreta!' })
+        res.status(401).json({ message: 'Usuario nao encontrado ou senha incorreta!' });
     };
 }
 
