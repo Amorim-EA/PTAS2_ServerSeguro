@@ -1,11 +1,19 @@
 const { Sequelize } = require('sequelize');
+const config = require('../config/config');
+const pg = require('pg');
+require('dotenv').config();
 
+const cdev = config.development;
+const localBd = `${cdev.dialect}://${cdev.username}:${cdev.password}@${cdev.host}:${cdev.port}/${cdev.database}`;
 
-const sequelize = new Sequelize("postgres://postgres:postgres@127.0.0.1:5432/DB_Gemeos",{
-define:{
-  timetamps:true,
-  underscored:true,
-},
+//const cloudBd = config.development.url;
+
+const sequelize = new Sequelize(localBd ,{
+  define: {
+    timetamps: true,
+    underscored: true,
+  },
+  dialectModule: pg
 });
 
   try {
